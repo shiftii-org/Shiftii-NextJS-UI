@@ -29,6 +29,10 @@ export async function supabaseFetch<T = unknown>(
 
   headers.set("apikey", publishableKey);
   headers.set("Authorization", `Bearer ${publishableKey}`);
+  if (schema !== "public") {
+    headers.set("Accept-Profile", schema);
+    headers.set("Content-Profile", schema);
+  }
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
