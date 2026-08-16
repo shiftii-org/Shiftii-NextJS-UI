@@ -30,6 +30,22 @@ Scripts that need writable project-scoped home, npm, XDG, and temporary paths us
 - `examples/d1/` contains an optional D1 example surface
 - `drizzle.config.ts` supports local migration generation when needed
 
+## Supabase
+
+The app is wired for the connected Supabase project with lightweight REST helpers in `lib/supabase/`:
+
+- `lib/supabase/client.ts` exports `getSupabaseConfig()` and `supabaseFetch()` for browser-safe calls.
+- `lib/supabase/server.ts` wraps `supabaseFetch()` with `cache: "no-store"` for Server Components, Server Actions, and Route Handlers.
+
+Set these runtime variables in Sites or in a local `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Call PostgREST paths through the helper, for example `supabaseFetch("staff?select=*")`. Use the publishable key only in `NEXT_PUBLIC_` client-facing variables. Do not expose service role or secret keys to browser code.
+
 ## Workspace Auth Headers
 
 OpenAI workspace sites can read the current user's email from
