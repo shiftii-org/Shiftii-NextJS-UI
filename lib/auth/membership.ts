@@ -59,7 +59,7 @@ export async function requireCurrentMembership(returnTo: string): Promise<Curren
   const membership = await getCurrentMembership();
   if (membership) return membership;
 
-  redirect(`/login?returnTo=${encodeURIComponent(safeReturnTo(returnTo))}`);
+  redirect(`/?returnTo=${encodeURIComponent(safeReturnTo(returnTo))}`);
 }
 
 async function getSupabaseMembership(): Promise<CurrentMembership | null> {
@@ -127,7 +127,7 @@ function safeReturnTo(value: string) {
   try {
     const url = new URL(value, "https://app.local");
     if (url.origin !== "https://app.local") return "/overview";
-    if (url.pathname === "/login") return "/overview";
+    if (url.pathname === "/" || url.pathname === "/login") return "/overview";
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return "/overview";
