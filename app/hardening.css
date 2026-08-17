@@ -1,4 +1,46 @@
 /* Current-product hardening: keep live data surfaces readable at desktop and mobile sizes. */
+.primary-nav a {
+  align-items: center;
+  background: transparent;
+  border-radius: 11px;
+  color: #a9b9b0;
+  display: flex;
+  font-size: 13px;
+  font-weight: 650;
+  gap: 13px;
+  height: 45px;
+  margin: 3px 0;
+  padding: 0 12px;
+  text-align: left;
+  text-decoration: none;
+  transition: 0.2s;
+  width: 100%;
+}
+
+.primary-nav a:hover {
+  background: #1d3328;
+  color: white;
+}
+
+.primary-nav a.active {
+  background: var(--lime);
+  box-shadow: 0 8px 24px #07130c99;
+  color: #14281d;
+}
+
+.primary-nav a b {
+  background: #ff725b;
+  border-radius: 50%;
+  color: white;
+  display: grid;
+  font-size: 9px;
+  height: 21px;
+  margin-left: auto;
+  place-items: center;
+  width: 21px;
+}
+
+.primary-nav a > span,
 .primary-nav button > span {
   width: 22px;
   height: 22px;
@@ -12,6 +54,7 @@
   place-items: center;
 }
 
+.primary-nav a.active > span,
 .primary-nav button.active > span {
   background: #173c2a;
   color: var(--lime);
