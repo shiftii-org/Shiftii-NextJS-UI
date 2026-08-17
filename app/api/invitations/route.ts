@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { getCurrentMembership } from "@/lib/auth/membership";
+import { canInviteRole } from "@/lib/auth/permissions";
+import { isInviteRole } from "@/lib/auth/roles";
 import { sendInvitation } from "@/lib/shiftii-api";
-
-const roles = new Set(["ADMIN", "DOCTOR", "NURSE", "STAFF"]);
 
 export async function POST(request: Request) {
   try {
@@ -12,8 +13,16 @@ export async function POST(request: Request) {
     if (!email || !email.includes("@")) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
     }
-    if (!role || !roles.has(role)) {
+    if (!role || !isInviteRole(role)) {
       return NextResponse.json({ error: "Choose a valid role." }, { status: 400 });
+    }
+
+    const membership = await getCurrentMembership();
+    if (!canInviteRole(membership, role)) {
+      return NextResponse.json(
+        { error: "You do not have permission to send this invitation." },
+        { status: 403 },
+      );
     }
 
     const result = await sendInvitation({ email, role });
