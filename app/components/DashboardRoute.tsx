@@ -6,6 +6,7 @@ import type {
   Organization,
   User,
 } from "@/lib/dashboard-data";
+import { requireCurrentMembership, type CurrentMembership } from "@/lib/auth/membership";
 import {
   formatDate,
   formatTime,
@@ -30,11 +31,12 @@ const titles: Record<DashboardView, string> = {
 };
 
 export async function DashboardRoute({ view }: { view: DashboardView }) {
+  const currentMembership = await requireCurrentMembership(`/${view}`);
   let data: DashboardData;
   let error: string | null = null;
 
   try {
-    data = await loadDashboardData();
+    data = scopeDashboardData(await loadDashboardData(), currentMembership);
   } catch (loadError) {
     error = loadError instanceof Error ? loadError.message : "Unable to load Supabase data";
     data = {
@@ -55,6 +57,7 @@ export async function DashboardRoute({ view }: { view: DashboardView }) {
   return (
     <AppShell
       active={view}
+      currentMembership={currentMembership}
       orgCount={data.organizations.length}
       pendingCount={pendingInvitations.length + pendingSwaps.length}
       primaryOrg={primaryOrganization(data.organizations)}
@@ -63,6 +66,25 @@ export async function DashboardRoute({ view }: { view: DashboardView }) {
       {error ? <LoadError message={error} /> : <DashboardContent data={data} view={view} />}
     </AppShell>
   );
+}
+
+function scopeDashboardData(data: DashboardData, membership: CurrentMembership): DashboardData {
+  if (membership.accessRole === "ADMIN" || membership.organizationId === null) {
+    return data;
+  }
+
+  const organizationId = membership.organizationId;
+  const rosters = data.rosters.filter((roster) => roster.organization_id === organizationId);
+  const rosterIds = new Set(rosters.map((roster) => roster.id));
+
+  return {
+    organizations: data.organizations.filter((org) => org.id === organizationId),
+    users: data.users.filter((user) => user.organization_id === organizationId),
+    rosters,
+    shifts: data.shifts.filter((shift) => rosterIds.has(shift.roster_id)),
+    invitations: data.invitations.filter((invite) => invite.organization_id === organizationId),
+    swapRequests: data.swapRequests.filter((swap) => swap.organization_id === organizationId),
+  };
 }
 
 function DashboardContent({ data, view }: { data: DashboardData; view: DashboardView }) {
