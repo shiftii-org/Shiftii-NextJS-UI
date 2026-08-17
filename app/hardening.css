@@ -1,0 +1,195 @@
+/* Current-product hardening: keep live data surfaces readable at desktop and mobile sizes. */
+.primary-nav button > span {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: #ffffff12;
+  display: grid;
+  flex: 0 0 auto;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0;
+  place-items: center;
+}
+
+.primary-nav button.active > span {
+  background: #173c2a;
+  color: var(--lime);
+}
+
+.metric-icon,
+.quick-grid i {
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
+.panel.full {
+  min-height: auto;
+}
+
+.content {
+  width: 100%;
+}
+
+.team-table {
+  overflow: visible;
+}
+
+.team-head,
+.team-row {
+  gap: 12px;
+  grid-template-columns:
+    minmax(240px, 1.45fr)
+    minmax(88px, 0.55fr)
+    minmax(150px, 0.8fr)
+    minmax(96px, 0.55fr)
+    minmax(118px, 0.65fr);
+  min-width: 0;
+}
+
+.team-head span,
+.team-row > span {
+  min-width: 0;
+}
+
+.team-row strong,
+.team-row small,
+.request-row strong,
+.request-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-row small,
+.request-row > div:nth-child(2) span {
+  white-space: nowrap;
+}
+
+.request-grid {
+  align-items: start;
+  grid-template-columns: minmax(260px, 1fr) minmax(340px, 1.05fr) minmax(260px, 1fr);
+}
+
+.request-grid article {
+  background: white;
+  min-width: 0;
+}
+
+.request-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-width: 0;
+}
+
+.request-row > .pill:nth-last-child(1) {
+  justify-self: end;
+}
+
+.invite-form {
+  grid-template-columns: minmax(0, 1fr) minmax(118px, 0.42fr);
+}
+
+.invite-form .primary {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.invite-form input,
+.invite-form select {
+  min-width: 0;
+}
+
+.empty > span {
+  font-size: 8px;
+  font-weight: 900;
+}
+
+@media (max-width: 1180px) {
+  .request-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .request-grid article:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .team-table {
+    overflow: auto;
+  }
+
+  .team-head,
+  .team-row {
+    min-width: 680px;
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    gap: 16px;
+  }
+
+  .top-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .team-table {
+    overflow: visible;
+  }
+
+  .team-head {
+    display: none;
+  }
+
+  .team-row {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 1fr auto;
+    min-width: 0;
+    padding: 14px 0;
+  }
+
+  .team-row > div:first-child,
+  .team-row > span:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .team-row > span:nth-child(2)::before {
+    color: #87928c;
+    content: "Role: ";
+  }
+
+  .team-row > span:nth-child(3)::before {
+    color: #87928c;
+    content: "Organization: ";
+  }
+
+  .team-row > span:nth-child(4) {
+    justify-self: start;
+  }
+
+  .team-row > span:nth-child(5) {
+    justify-self: end;
+  }
+
+  .request-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .request-grid article:last-child {
+    grid-column: auto;
+  }
+
+  .request-row {
+    gap: 10px;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .request-row > .pill {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .invite-form {
+    grid-template-columns: 1fr;
+  }
+}
