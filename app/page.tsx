@@ -1,3 +1,4 @@
+import { InviteStaffForm } from "@/app/components/InviteStaffForm";
 import { supabaseFetch } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -295,7 +296,9 @@ export default async function Home() {
                   }))}
                   kicker="Invitations"
                   title="Invite status"
-                />
+                >
+                  <InviteStaffForm />
+                </SummaryList>
                 <SummaryList
                   empty="No swap request rows were found."
                   items={data.swapRequests.slice(0, 6).map((swap) => ({
@@ -329,8 +332,20 @@ function DataTile({ icon, tone, title, sub }: { icon: string; tone: string; titl
   return <button type="button"><i className={tone}>{icon}</i><strong>{title}</strong><small>{sub}</small></button>;
 }
 
-function SummaryList({ empty = "No rows were found.", items, kicker, title }: { empty?: string; items: { id: number; title: string; detail: string; badge: string; status: string }[]; kicker: string; title: string }) {
-  return <article><PanelHead kicker={kicker} title={title} /><div className="request-list">{items.map((item, index) => <div className="request-row" key={item.id}><Avatar index={index} name={item.title} /><div><strong>{item.title}</strong><span>{item.detail}</span></div><Pill kind={item.status}>{item.badge}</Pill></div>)}{!items.length && <Empty title="Nothing here" detail={empty} />}</div></article>;
+function SummaryList({
+  children,
+  empty = "No rows were found.",
+  items,
+  kicker,
+  title,
+}: {
+  children?: React.ReactNode;
+  empty?: string;
+  items: { id: number; title: string; detail: string; badge: string; status: string }[];
+  kicker: string;
+  title: string;
+}) {
+  return <article><PanelHead kicker={kicker} title={title} />{children}<div className="request-list">{items.map((item, index) => <div className="request-row" key={item.id}><Avatar index={index} name={item.title} /><div><strong>{item.title}</strong><span>{item.detail}</span></div><Pill kind={item.status}>{item.badge}</Pill></div>)}{!items.length && <Empty title="Nothing here" detail={empty} />}</div></article>;
 }
 
 function Avatar({ name, index }: { name: string; index: number }) {
