@@ -16,10 +16,12 @@
 # next.js
 /.next/
 /out/
+/.turbo/
 
 # misc
 .DS_Store
 *.pem
+*.tsbuildinfo
 
 # debug
 npm-debug.log*
@@ -37,7 +39,9 @@ yarn-error.log*
 # typescript
 next-env.d.ts
 /dist/
+/.cache/
 /.wrangler/
 /.sites-runtime/
+/.vinext/
 /outputs/
 /work/

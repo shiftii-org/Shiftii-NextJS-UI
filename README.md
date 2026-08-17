@@ -1,13 +1,61 @@
-# vinext-starter
+# Shiftii Workforce UI
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Next.js/Vinext dashboard for Shiftii workforce scheduling. The app reads live
+workspace data from Supabase and uses the Shiftii backend API for staff
+invitations.
 
 ## Prerequisites
 
 - Node.js `>=22.13.0`
-- Linux with `flock`, `curl`, and GNU `timeout`
+- Linux with `flock`, `curl`, and GNU `timeout` for the CI/install helper
+- A Supabase project URL and publishable key
+- Shiftii backend admin credentials if you need to send staff invitations
+
+## Clone And Run Locally
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/shiftii-org/Shiftii-NextJS-UI.git
+cd Shiftii-NextJS-UI
+npm ci
+```
+
+Create a local environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
+SHIFTTII_API_BASE_URL=https://shiftii-gkeh.onrender.com/api
+SHIFTTII_ADMIN_ORG_CODE=your-org-code
+SHIFTTII_ADMIN_EMAIL=your-admin-email
+SHIFTTII_ADMIN_PASSWORD=your-admin-password
+```
+
+Run the local dev server:
+
+```bash
+npm run dev
+```
+
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000).
+
+If `npm` is unavailable on Windows but `node_modules` already exists, the dev
+server can also be started directly:
+
+```powershell
+$env:WRANGLER_LOG_PATH=".wrangler/wrangler.log"
+node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 3000
+```
+
+Never commit `.env.local`. It contains private server-side credentials and is
+already ignored by Git.
 
 ## Sites Lifecycle
 
@@ -45,6 +93,21 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 Call PostgREST paths through the helper, for example `supabaseFetch("staff?select=*")`. Use the publishable key only in `NEXT_PUBLIC_` client-facing variables. Do not expose service role or secret keys to browser code.
+
+## Staff Invitations
+
+The invitation system uses the Shiftii backend API, not direct browser calls.
+
+- `POST /api/invitations` validates an email and role, then sends the invite
+  through `POST /api/invite/send/`.
+- `/invite/accept/[token]` validates a token through
+  `GET /api/invite/accept/{token}/`.
+- `POST /api/invitations/register` completes staff account creation through
+  `POST /api/auth/staff/register/`.
+
+The Next.js route handlers read `SHIFTTII_ADMIN_ORG_CODE`,
+`SHIFTTII_ADMIN_EMAIL`, and `SHIFTTII_ADMIN_PASSWORD` from server-side
+environment variables. Do not expose those values with `NEXT_PUBLIC_` prefixes.
 
 ## Workspace Auth Headers
 
