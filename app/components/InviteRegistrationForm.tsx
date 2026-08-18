@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 
+type RegistrationResponse = {
+  authUser?: {
+    confirmationRequired?: boolean;
+  };
+  error?: string;
+};
+
 export function InviteRegistrationForm({ token }: { token: string }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -25,14 +32,18 @@ export function InviteRegistrationForm({ token }: { token: string }) {
           password,
         }),
       });
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as RegistrationResponse;
 
       if (!response.ok) {
         throw new Error(payload.error ?? "Unable to complete registration.");
       }
 
       setStatus("saved");
-      setMessage("Your account is ready. You can now sign in with your organization code.");
+      setMessage(
+        payload.authUser?.confirmationRequired
+          ? "Your staff account was created. Confirm your email, then sign in with your email and password."
+          : "Your staff account is ready. You can now sign in with your email and password.",
+      );
       setPassword("");
     } catch (error) {
       setStatus("error");

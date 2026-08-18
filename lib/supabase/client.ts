@@ -18,6 +18,10 @@ export function getSupabaseConfig() {
   };
 }
 
+export function shouldSendSupabaseBearer(key: string) {
+  return !key.startsWith("sb_publishable_") && !key.startsWith("sb_secret_");
+}
+
 export async function supabaseFetch<T = unknown>(
   path: string,
   init: SupabaseFetchInit = {},
@@ -28,7 +32,9 @@ export async function supabaseFetch<T = unknown>(
   const headers = new Headers(init.headers);
 
   headers.set("apikey", publishableKey);
-  headers.set("Authorization", `Bearer ${publishableKey}`);
+  if (shouldSendSupabaseBearer(publishableKey)) {
+    headers.set("Authorization", `Bearer ${publishableKey}`);
+  }
   if (schema !== "public") {
     headers.set("Accept-Profile", schema);
     headers.set("Content-Profile", schema);
