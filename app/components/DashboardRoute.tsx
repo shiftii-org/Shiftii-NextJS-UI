@@ -3,6 +3,7 @@ import { AppShell } from "@/app/components/AppShell";
 import type {
   DashboardData,
   DashboardView,
+  EntityId,
   Organization,
   User,
 } from "@/lib/dashboard-data";
@@ -294,7 +295,7 @@ function TeamPanel({
   organizationsById,
   users,
 }: {
-  organizationsById: Map<number, Organization>;
+  organizationsById: Map<EntityId, Organization>;
   users: User[];
 }) {
   return (
@@ -357,15 +358,15 @@ function SummaryList({
 }: {
   children?: React.ReactNode;
   empty?: string;
-  items: { id: number; title: string; detail: string; badge: string; status: string }[];
+  items: { id: EntityId; title: string; detail: string; badge: string; status: string }[];
   kicker: string;
   title: string;
 }) {
   return <article><PanelHead kicker={kicker} title={title} />{children}<div className="request-list">{items.map((item, index) => <div className="request-row" key={item.id}><Avatar index={index} name={item.title} /><div><strong>{item.title}</strong><span>{item.detail}</span></div><Pill kind={item.status}>{item.badge}</Pill></div>)}{!items.length && <Empty title="Nothing here" detail={empty} />}</div></article>;
 }
 
-function Avatar({ name, index }: { name: string; index: number }) {
-  return <span className={`avatar ${tones[index % tones.length]}`}>{initials(name)}</span>;
+function Avatar({ name, index }: { name: string; index: EntityId }) {
+  return <span className={`avatar ${tones[toneIndex(index)]}`}>{initials(name)}</span>;
 }
 
 function Pill({ children, kind = "neutral" }: { children: React.ReactNode; kind?: string }) {
@@ -374,4 +375,12 @@ function Pill({ children, kind = "neutral" }: { children: React.ReactNode; kind?
 
 function Empty({ title, detail }: { title: string; detail: string }) {
   return <div className="empty"><span>OK</span><strong>{title}</strong><p>{detail}</p></div>;
+}
+
+function toneIndex(value: EntityId) {
+  if (typeof value === "number") return Math.abs(value) % tones.length;
+
+  let total = 0;
+  for (const char of value) total += char.charCodeAt(0);
+  return total % tones.length;
 }

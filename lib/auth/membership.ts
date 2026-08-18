@@ -12,6 +12,18 @@ type MembershipUser = {
   organization_id: number | null;
 };
 
+type CoreProfile = {
+  id: string;
+  email: string;
+};
+
+type CoreMembership = {
+  id: string;
+  organization_id: string;
+  access_role: string;
+  status: string;
+};
+
 type SupabaseAuthUser = {
   id: string;
   email?: string;
@@ -19,9 +31,9 @@ type SupabaseAuthUser = {
 
 export type CurrentMembership = {
   authUserId: string | null;
-  userId: number | null;
+  userId: string | number | null;
   email: string;
-  organizationId: number | null;
+  organizationId: string | number | null;
   accessRole: AccessRole;
   source: "supabase-auth" | "trusted-header" | "local-development";
 };
@@ -97,6 +109,48 @@ async function findMembershipByEmail(
   const normalizedEmail = email.trim().toLowerCase();
   if (!normalizedEmail) return null;
 
+  const coreMembership = await findCoreMembershipByEmail(normalizedEmail, source, authUserId);
+  if (coreMembership) return coreMembership;
+
+  return findLegacyMembershipByEmail(normalizedEmail, source, authUserId);
+}
+
+async function findCoreMembershipByEmail(
+  normalizedEmail: string,
+  source: CurrentMembership["source"],
+  authUserId: string | null,
+): Promise<CurrentMembership | null> {
+  try {
+    const profiles = await supabaseFetch<CoreProfile[]>(
+      `profiles?select=id,email&email=eq.${encodeURIComponent(normalizedEmail)}&limit=1`,
+    );
+    const profile = profiles[0];
+    if (!profile) return null;
+
+    const memberships = await supabaseFetch<CoreMembership[]>(
+      `memberships?select=id,organization_id,access_role,status&user_id=eq.${encodeURIComponent(profile.id)}&status=eq.ACTIVE&limit=1`,
+    );
+    const membership = memberships[0];
+    if (!membership) return null;
+
+    return {
+      authUserId,
+      userId: membership.id,
+      email: profile.email,
+      organizationId: membership.organization_id,
+      accessRole: normalizeAccessRole(membership.access_role),
+      source,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function findLegacyMembershipByEmail(
+  normalizedEmail: string,
+  source: CurrentMembership["source"],
+  authUserId: string | null,
+): Promise<CurrentMembership | null> {
   const users = await supabaseFetch<MembershipUser[]>(
     `users_user?select=id,email,role,is_active,organization_id&email=eq.${encodeURIComponent(normalizedEmail)}&is_active=eq.true&limit=1`,
   );
