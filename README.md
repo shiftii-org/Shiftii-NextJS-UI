@@ -8,7 +8,7 @@ invitations.
 
 - Node.js `>=22.13.0`
 - Linux with `flock`, `curl`, and GNU `timeout` for the CI/install helper
-- A Supabase project URL and publishable key
+- A Supabase project URL, publishable key, and server-only secret key
 - Shiftii backend admin credentials if you need to send staff invitations
 
 ## Clone And Run Locally
@@ -32,6 +32,8 @@ Fill in `.env.local`:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
+SUPABASE_SECRET_KEY=server-only-secret-key
+SUPABASE_SERVICE_ROLE_KEY=server-only-legacy-service-role-key
 SHIFTTII_API_BASE_URL=https://shiftii-gkeh.onrender.com/api
 SHIFTTII_ADMIN_ORG_CODE=your-org-code
 SHIFTTII_ADMIN_EMAIL=your-admin-email
@@ -56,6 +58,18 @@ node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 3000
 
 Never commit `.env.local`. It contains private server-side credentials and is
 already ignored by Git.
+
+Create the first Supabase Auth user when the app-table admin already exists but
+Supabase Auth is empty:
+
+```bash
+npm run auth:seed
+```
+
+The command reads `SHIFTTII_ADMIN_EMAIL` and `SHIFTTII_ADMIN_PASSWORD` from
+`.env.local`, submits them to your configured Supabase Auth project, and does
+not print the password. If email confirmation is enabled in Supabase, confirm
+the user before signing in locally.
 
 ## Sites Lifecycle
 
@@ -83,16 +97,24 @@ Scripts that need writable project-scoped home, npm, XDG, and temporary paths us
 The app is wired for the connected Supabase project with lightweight REST helpers in `lib/supabase/`:
 
 - `lib/supabase/client.ts` exports `getSupabaseConfig()` and `supabaseFetch()` for browser-safe calls.
-- `lib/supabase/server.ts` wraps `supabaseFetch()` with `cache: "no-store"` for Server Components, Server Actions, and Route Handlers.
+- `lib/supabase/server.ts` uses `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` for Server Components, Server Actions, and Route Handlers when available, then falls back to the publishable key for development.
 
 Set these runtime variables in Sites or in a local `.env.local`:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 Call PostgREST paths through the helper, for example `supabaseFetch("staff?select=*")`. Use the publishable key only in `NEXT_PUBLIC_` client-facing variables. Do not expose service role or secret keys to browser code.
+
+The SQL migration in `supabase/migrations/` is a reviewable hardening step for
+the connected project. It removes broad Data API grants from `anon` and
+`authenticated`, enables RLS on public tables, and relies on the Next.js server
+using `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` for trusted reads.
+Apply it only after that server-side key is configured in the runtime.
 
 ## Staff Invitations
 
@@ -108,6 +130,12 @@ The invitation system uses the Shiftii backend API, not direct browser calls.
 The Next.js route handlers read `SHIFTTII_ADMIN_ORG_CODE`,
 `SHIFTTII_ADMIN_EMAIL`, and `SHIFTTII_ADMIN_PASSWORD` from server-side
 environment variables. Do not expose those values with `NEXT_PUBLIC_` prefixes.
+
+Accepted invitations also create the matching Supabase Auth user so staff can
+sign in to this UI with email and password. Set `SUPABASE_SECRET_KEY` or
+`SUPABASE_SERVICE_ROLE_KEY` server-side to create already-confirmed Auth users.
+Without one of those values, the local flow falls back to Supabase public signup
+and may require email confirmation before the new staff user can sign in.
 
 ## Workspace Auth Headers
 
